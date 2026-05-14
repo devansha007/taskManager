@@ -1,0 +1,90 @@
+version: '3.9'
+
+services:
+
+  # ─── PostgreSQL ────────────────────────────────
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB:       taskapi_db
+      POSTGRES_USER:     taskapi_user
+      POSTGRES_PASSWORD: taskapi_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskapi_user -d taskapi_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ─── Redis ─────────────────────────────────────
+  redis:
+    image: redis:alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ─── Django ────────────────────────────────────
+  django:
+    build: ./taskapi
+    environment:
+      DEBUG:          'False'
+      SECRET_KEY:     'your-secret-key-change-this-in-production'
+      DATABASE_URL:   postgresql://taskapi_user:taskapi_pass@db:5432/taskapi_db
+      REDIS_URL:      redis://redis:6379/0
+      ALLOWED_HOSTS:  'localhost,127.0.0.1,django'
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./taskapi:/app
+    ports:
+      - "8000:8000"
+
+  # ─── Celery Worker ─────────────────────────────
+  celery:
+    build: ./taskapi
+    environment:
+      DEBUG:        'False'
+      SECRET_KEY:   'your-secret-key-change-this-in-production'
+      DATABASE_URL: postgresql://taskapi_user:taskapi_pass@db:5432/taskapi_db
+      REDIS_URL:    redis://redis:6379/0
+    depends_on:
+      - django
+      - redis
+    command: celery -A core worker --pool=solo --loglevel=info
+    volumes:
+      - ./taskapi:/app
+
+  # ─── Celery Beat ───────────────────────────────
+  celerybeat:
+    build: ./taskapi
+    environment:
+      DEBUG:        'False'
+      SECRET_KEY:   'your-secret-key-change-this-in-production'
+      DATABASE_URL: postgresql://taskapi_user:taskapi_pass@db:5432/taskapi_db
+      REDIS_URL:    redis://redis:6379/0
+    depends_on:
+      - django
+      - redis
+    command: celery -A core beat --loglevel=info
+    volumes:
+      - ./taskapi:/app
+
+  # ─── React (Nginx) ─────────────────────────────
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - django
+
+volumes:
+  postgres_data:

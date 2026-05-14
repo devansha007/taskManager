@@ -1,0 +1,6 @@
+# Docker
+docker-compose.override.yml
+
+# Frontend
+frontend/node_modules/
+frontend/.env
