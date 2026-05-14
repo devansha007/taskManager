@@ -25,6 +25,11 @@ EXPOSE 8000
 # Start Gunicorn
 # CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2"]
 # CMD python manage.py migrate && gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 2
+# CMD python manage.py migrate && \
+#     celery -A core worker --loglevel=info --detach && \
+#     gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 2
+
 CMD python manage.py migrate && \
-    celery -A core worker --loglevel=info --detach && \
+    celery -A core worker --loglevel=info --detach --logfile=/tmp/celery.log && \
+    celery -A core beat --loglevel=info --detach --logfile=/tmp/celerybeat.log && \
     gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 2
