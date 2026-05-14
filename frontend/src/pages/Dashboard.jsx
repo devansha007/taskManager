@@ -18,7 +18,7 @@ export default function Dashboard() {
   const [loading, setLoading]     = useState(true);
   const [showForm, setShowForm]   = useState(false);
   const [editingTask, setEditingTask] = useState(null);
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchTasks(); fetchStats(); }, []);
 
   const fetchTasks = async () => {
