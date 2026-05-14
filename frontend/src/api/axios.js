@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api' , 
+  baseURL: process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api',
   // 'http://127.0.0.1:8000/api',  // your Django backend
 });
 
@@ -27,8 +27,9 @@ api.interceptors.response.use(
       try {
         const refresh = localStorage.getItem('refresh');
         const res = await axios.post(
-          '/api/auth/refresh/',
-          { refresh }
+             `${process.env.REACT_APP_API_URL}/auth/refresh/`,
+              { refresh }
+
         );
         localStorage.setItem('access', res.data.access);
         original.headers.Authorization = `Bearer ${res.data.access}`;
