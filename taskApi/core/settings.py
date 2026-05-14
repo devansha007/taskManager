@@ -301,7 +301,14 @@ CELERY_TIMEZONE = 'Asia/Kolkata'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 # ─── Email ────────────────────────────────────────
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST          = 'smtp.gmail.com'
+EMAIL_PORT          = 587
+EMAIL_USE_TLS       = True
+EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL  = f'TaskAPI <{os.environ.get("EMAIL_HOST_USER")}>'
+
 # For real emails, replace above with:
 # EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_HOST          = 'smtp.gmail.com'
@@ -309,7 +316,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # EMAIL_USE_TLS       = True
 # EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER')
 # EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = 'TaskAPI <noreply@taskapi.com>'
+# DEFAULT_FROM_EMAIL = 'TaskAPI <noreply@taskapi.com>'
 
 # ─── Auth / JWT ───────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
