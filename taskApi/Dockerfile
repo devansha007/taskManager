@@ -23,4 +23,5 @@ RUN python manage.py collectstatic --noinput || true
 EXPOSE 8000
 
 # Start Gunicorn
-CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2"]
+# CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2"]
+CMD python manage.py migrate && gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 2
